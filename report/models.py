@@ -18,6 +18,7 @@ class AddressType(models.Model):
 
 
 class Report(models.Model):
+    id = models.BigIntegerField(primary_key=True)
     crime_type = models.ForeignKey(
         CrimeType,
         on_delete=models.CASCADE,
