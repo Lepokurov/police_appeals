@@ -130,6 +130,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CVS_FILE_PATH = "police_report.csv"
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 25
+}
 
 try:
     from police_appeals.settings_local import *  # NOQA
