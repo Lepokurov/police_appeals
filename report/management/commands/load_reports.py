@@ -71,7 +71,7 @@ class Command(BaseCommand):
             new_report_count += 1
         steps = math.ceil(len(reports)/INSERT_BY_STEP)
         threads = []
-        for step in tqdm(range(steps), colour='yellow', desc="Транзакции в бд (Создание задач в тредах)"):
+        for step in range(steps):
             start = step * INSERT_BY_STEP
             end = (step+1) * INSERT_BY_STEP if step != steps else -1
 
