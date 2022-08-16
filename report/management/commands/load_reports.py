@@ -7,7 +7,7 @@ from threading import Thread
 from django.core.management import BaseCommand
 from tqdm import tqdm
 
-from police_appeals.settings import CVS_FILE_PATH, INSERT_BY_STEP
+from police_appeals.settings import CVS_FILE_PATH, INSERT_BY_STEP, PARALLELS
 from report.models import CrimeType, City, State, Report, AddressType
 
 
@@ -71,14 +71,21 @@ class Command(BaseCommand):
             new_report_count += 1
         steps = math.ceil(len(reports)/INSERT_BY_STEP)
         threads = []
-        for step in tqdm(range(steps), colour='yellow', desc="Транзакции в бд (начало работы в треде)"):
+        for step in tqdm(range(steps), colour='yellow', desc="Транзакции в бд (Создание задач в тредах)"):
             start = step * INSERT_BY_STEP
             end = (step+1) * INSERT_BY_STEP if step != steps else -1
+
             thread = Thread(target=Report.objects.bulk_create, args=(reports[start:end],),  kwargs={"ignore_conflicts":True})
-            thread.start()
             threads.append(thread)
-        for thread in tqdm(threads, colour='green', desc="Транзакции в бд (конец работы в треде)"):
-            thread.join()
+        running_tasks = []
+        for thread in tqdm(threads, colour='green', desc="Транзакции в бд (работа в треде)"):
+            for running_task in running_tasks:
+                if not running_task.is_alive():
+                    running_tasks.remove(running_task)
+            thread.start()
+            if len(running_tasks) >= PARALLELS:
+                thread.join()
+            running_tasks.append(thread)
         print(f'Add {new_report_count} rows to DB')
 
     def handle(self, *args, **kwargs):
