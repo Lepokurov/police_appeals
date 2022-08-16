@@ -23,10 +23,15 @@
 API:
 
 GET /api/reports
+
 query:
+
 limt: int
+
 page: int
+
 date_from: int (timestamp)
+
 date_to : int (timestamp)
 
 
