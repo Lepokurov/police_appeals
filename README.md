@@ -28,3 +28,6 @@ limt: int
 page: int
 date_from: int (timestamp)
 date_to : int (timestamp)
+
+
+PS: Так же можно поменять INSERT_BY_STEP переменную в settings_local.py чтобы изменить колличество строк для записи за 1 транзакцию
