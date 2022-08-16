@@ -135,6 +135,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 25
 }
 
+INSERT_BY_STEP = 70000
+
 try:
     from police_appeals.settings_local import *  # NOQA
 except ImportError:

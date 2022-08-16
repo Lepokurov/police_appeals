@@ -1,11 +1,13 @@
 import csv
+import math
 import os
 from datetime import datetime
+from threading import Thread
 
 from django.core.management import BaseCommand
 from tqdm import tqdm
 
-from police_appeals.settings import CVS_FILE_PATH
+from police_appeals.settings import CVS_FILE_PATH, INSERT_BY_STEP
 from report.models import CrimeType, City, State, Report, AddressType
 
 
@@ -44,8 +46,7 @@ class Command(BaseCommand):
         cities = {}
         states = {}
         address_types = {}
-        created_report_ids = Report.objects.all().values_list('id', flat=True)
-        for row in tqdm(raw_data, colour='green', desc='Сохранение данных в БД'):
+        for row in tqdm(raw_data, colour='green', desc='Подготовка данных для сохраения в  БД'):
             crime_type_name = row.pop('crime_type')
             city_name = row.pop('city')
             state_code = row.pop('state')
@@ -66,11 +67,18 @@ class Command(BaseCommand):
             if not address_type:
                 address_type, _ = AddressType.objects.get_or_create(name=address_type_name)
                 address_types[address_type_name] = address_type
-            if row.get("id") in created_report_ids:
-                continue
             reports.append(Report(crime_type=crime_type, city=city, state=state, address_type=address_type, **row))
             new_report_count += 1
-        Report.objects.bulk_create(reports)
+        steps = math.ceil(len(reports)/INSERT_BY_STEP)
+        threads = []
+        for step in tqdm(range(steps), colour='yellow', desc="Транзакции в бд (начало работы в треде)"):
+            start = step * INSERT_BY_STEP
+            end = (step+1) * INSERT_BY_STEP if step != steps else -1
+            thread = Thread(target=Report.objects.bulk_create, args=(reports[start:end],),  kwargs={"ignore_conflicts":True})
+            thread.start()
+            threads.append(thread)
+        for thread in tqdm(threads, colour='green', desc="Транзакции в бд (конец работы в треде)"):
+            thread.join()
         print(f'Add {new_report_count} rows to DB')
 
     def handle(self, *args, **kwargs):
