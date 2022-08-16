@@ -86,6 +86,9 @@ class Command(BaseCommand):
             if len(running_tasks) >= PARALLELS:
                 thread.join()
             running_tasks.append(thread)
+        for task in tqdm(running_tasks, colour="green", desc="Завершение работы тредов"):
+            task.join()
+
         print(f'Add {new_report_count} rows to DB')
 
     def handle(self, *args, **kwargs):
