@@ -6,7 +6,7 @@
 `python3 -m venv venv`
 
 2. Установить зависимости через команду
-`pip install -r requirements`
+`pip install -r requirements.txt`
 
 3. Создать файл `settings_local.py` И добавить секреты для доступа к базе (DATABASES), и так же пусть к csv файлу (CVS_FILE_PATH)
 
